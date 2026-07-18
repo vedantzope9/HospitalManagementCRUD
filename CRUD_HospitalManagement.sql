@@ -39,6 +39,7 @@ IF OBJECT_ID('demo.Doctor') IS  NULL
 BEGIN
 	CREATE TABLE demo.DOCTOR(
 		DoctorId INT IDENTITY(1,1) PRIMARY KEY,
+		UserId INT NOT NULL,
 		DoctorName NVARCHAR(100) NOT NULL,
 		HospitalId INT,
 		Specialization INT NOT NULL,
@@ -46,23 +47,37 @@ BEGIN
 		Experience INT,
 		ConsultationFee DECIMAL(10,2) NOT NULL,
 		IsAvailable BIT NOT NULL,
-		PhoneNumber NVARCHAR(15),
-		Email NVARCHAR(100),
 		IsActive BIT NOT NULL,
 		CONSTRAINT FK_HospitalId_Doctor FOREIGN KEY (HospitalId) REFERENCES demo.Hospital(HospitalId),
+		CONSTRAINT FK_UserId_Doctor FOREIGN KEY (Userid) REFERENCES demo.SecLoginUser(UserId),
 		--CONSTRAINT FK_Specialization_Doctor FOREIGN KEY (Specialization) REFERENCES demo.Enum_Table(EnumId)
 	);
 END;
+
+use demo;
+
+IF OBJECT_ID('demo.SecLoginUser') IS  NULL
+BEGIN
+	CREATE TABLE demo.SecLoginUser(
+		UserId INT IDENTITY(1,1) PRIMARY KEY,
+		UserName NVARCHAR(250) NOT NULL,
+		Password NVARCHAR(250) NOT NULL,
+		Gender INT NOT NULL,
+		PhoneNumber NVARCHAR(15) NOT NULL,
+		Email NVARCHAR(100),
+		Role INT NOT NULL,	--Doctor-1 , Patient-2
+		IsActive BIT NOT NULL
+	);
+END
+
 
 IF OBJECT_ID('demo.Appointment') IS  NULL
 BEGIN
 	CREATE TABLE demo.APPOINTMENT(
 		AppointmentId INT IDENTITY(1,1) PRIMARY KEY,
 		DoctorId INT NOT NULL,
-		PatientFullName NVARCHAR(100) NOT NULL,
+		UserId INT NOT NULL,
 		PatientAge INT NOT NULL,
-		Gender INT NOT NULL,
-		PatientPhone NVARCHAR(15) NOT NULL,
 		AppointmentDate DATE,
 		AppointmentTime TIME,
 		DiseaseDescription NVARCHAR(200),
@@ -70,6 +85,7 @@ BEGIN
 		FeesPaid DECIMAL(10,2) NOT NULL,
 		LastModifiedDate DATETIME DEFAULT GETDATE(),
 		CONSTRAINT FK_DoctorId_Appointment FOREIGN KEY (DoctorId) REFERENCES demo.Doctor(DoctorId),
+		CONSTRAINT FK_UserId_Appointment FOREIGN KEY (UserId) REFERENCES demo.SecLoginUser(UserId),
 		--CONSTRAINT FK_Gender_Appointment FOREIGN KEY (Gender) REFERENCES demo.Enum_Table(EnumId),
 		--CONSTRAINT FK_Status_Appointment FOREIGN KEY (Status) REFERENCES demo.Enum_Table(EnumId),
 	);
@@ -80,17 +96,17 @@ END
 --Bootstrap data
 
 INSERT INTO demo.Enum_Table VALUES 
-	('Gender' , (Select ISNULL( Max(EnumId) , 0)+1 From demo.Enum_Table WHERE EnumGroup = 'Gender') , 'Male',0, GETDATE(), 1),
-	('Gender' , (Select ISNULL( Max(EnumId) , 0)+1 From demo.Enum_Table WHERE EnumGroup = 'Gender') , 'Female',1, GETDATE(), 'true');
+	('Gender' , (Select ISNULL( Max(EnumId) , 0)+1 From demo.Enum_Table WHERE EnumGroup = 'Gender') , 'Male','MALE', GETDATE(), 1),
+	('Gender' , (Select ISNULL( Max(EnumId) , 0)+1 From demo.Enum_Table WHERE EnumGroup = 'Gender') , 'Female','FEMALE', GETDATE(), 'true');
 
 --NOTE: Run each Insert query one by one --EnumId 
 INSERT INTO demo.Enum_Table VALUES 
-	('Status' , (Select ISNULL( Max(EnumId) , 0)+1 From demo.Enum_Table WHERE EnumGroup = 'Status') , 'Booked',1, GETDATE(), 'true'),
-	('Status' , (Select ISNULL( Max(EnumId) , 0)+1 From demo.Enum_Table WHERE EnumGroup = 'Status') , 'Completed',2, GETDATE(), 'true'),
-	('Status' , (Select ISNULL( Max(EnumId) , 0)+1 From demo.Enum_Table WHERE EnumGroup = 'Status') , 'Confirmed',3, GETDATE(), 'true'),
-	('Status' , (Select ISNULL( Max(EnumId) , 0)+1 From demo.Enum_Table WHERE EnumGroup = 'Status') , 'Cancelled',4, GETDATE(), 'true'),
-	('Status' , (Select ISNULL( Max(EnumId) , 0)+1 From demo.Enum_Table WHERE EnumGroup = 'Status') , 'Rescheduled',5, GETDATE(), 'true'),
-	('Status' , (Select ISNULL( Max(EnumId) , 0)+1 From demo.Enum_Table WHERE EnumGroup = 'Status') , 'No Show',6, GETDATE(), 'true');
+	('Status' , (Select ISNULL( Max(EnumId) , 0)+1 From demo.Enum_Table WHERE EnumGroup = 'Status') , 'Booked','BOOKED', GETDATE(), 'true'),
+	('Status' , (Select ISNULL( Max(EnumId) , 0)+1 From demo.Enum_Table WHERE EnumGroup = 'Status') , 'Completed','COMPLETED', GETDATE(), 'true'),
+	('Status' , (Select ISNULL( Max(EnumId) , 0)+1 From demo.Enum_Table WHERE EnumGroup = 'Status') , 'Confirmed','CONFIRMED', GETDATE(), 'true'),
+	('Status' , (Select ISNULL( Max(EnumId) , 0)+1 From demo.Enum_Table WHERE EnumGroup = 'Status') , 'Cancelled','CANCELLED', GETDATE(), 'true'),
+	('Status' , (Select ISNULL( Max(EnumId) , 0)+1 From demo.Enum_Table WHERE EnumGroup = 'Status') , 'Rescheduled','RESCHEDULED', GETDATE(), 'true'),
+	('Status' , (Select ISNULL( Max(EnumId) , 0)+1 From demo.Enum_Table WHERE EnumGroup = 'Status') , 'No Show','NO_SHOW', GETDATE(), 'true');
 
 
 INSERT INTO demo.Enum_Table(EnumGroup,EnumId,DisplayText,Value,IsActive)
@@ -115,5 +131,15 @@ VALUES
 ('Specialization',18,'Radiologist','RADIOLOGIST',1),
 ('Specialization',19,'Anesthesiologist','ANESTHESIOLOGIST',1),
 ('Specialization',20,'Emergency Medicine','EMERGENCY_MEDICINE',1);
+
+INSERT INTO demo.Enum_Table VALUES 
+	('Role' , (Select ISNULL( Max(EnumId) , 0)+1 From demo.Enum_Table WHERE EnumGroup = 'Role') , 'Admin','ADMIN', GETDATE(), 1)
+INSERT INTO demo.Enum_Table VALUES 
+	('Role' , (Select ISNULL( Max(EnumId) , 0)+1 From demo.Enum_Table WHERE EnumGroup = 'Role') , 'Doctor','DOCTOR', GETDATE(), 1)
+INSERT INTO demo.Enum_Table VALUES 
+	('Role' , (Select ISNULL( Max(EnumId) , 0)+1 From demo.Enum_Table WHERE EnumGroup = 'Role') , 'User','USER', GETDATE(), 1)
+
+INSERT INTO demo.SecLoginUser 
+VALUES('admin' , 'admin@123' , (Select EnumId From demo.Enum_Table where Value = 'Male') , '0101010101' , 'admin@domain.com' , (Select EnumId From demo.Enum_Table where Value = 'ADMIN') , 1)
 
 */
