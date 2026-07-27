@@ -1,5 +1,10 @@
 
+using HospitalManagementCRUD.CommonFunctions;
 using HospitalManagementCRUD.Models;
+using HospitalManagementCRUD.RepositoryLayer.Implementations;
+using HospitalManagementCRUD.RepositoryLayer.Interfaces;
+using HospitalManagementCRUD.ServiceLayer.Implementations;
+using HospitalManagementCRUD.ServiceLayer.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace HospitalManagementCRUD
@@ -11,6 +16,12 @@ namespace HospitalManagementCRUD
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+
+            builder.Services.AddScoped<ISecLoginUserRepo, SecLoginUserRepo>();
+            builder.Services.AddScoped<ISecLoginUserService, SecLoginUserService>();
+            builder.Services.AddScoped<MyMapper, MyMapper>();
+
+            builder.Services.AddAutoMapper(typeof(Program));
 
             builder.Services.AddDbContext<HospitalDbContext>(options =>
             {
