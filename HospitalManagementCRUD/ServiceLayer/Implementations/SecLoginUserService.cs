@@ -19,44 +19,56 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
             _mapper = mapper;
         }
 
-        public async Task<SecLoginUserDTO?> GetSecLoginUser(int userId)
+        public async Task<ApiResponse<SecLoginUserDTO?>> GetSecLoginUser(int userId)
         {
+            ApiResponse<SecLoginUserDTO?> apiResponse = new ApiResponse<SecLoginUserDTO?>();
             SecLoginUser? secLoginUser = await _secLoginUserRepo.GetSecLoginUser(userId);
 
-            if(secLoginUser==null)
-                return null;
+            if (secLoginUser == null)
+            {
+                apiResponse.Success = false;
+                apiResponse.Message = "No User Found.";
+                return apiResponse;
+            }
 
             //SecLoginUserDTO? secLoginUserDTO=new SecLoginUserDTO();
             //secLoginUserDTO= _myMapper.MapEntityToDto<SecLoginUser, SecLoginUserDTO>(secLoginUser, secLoginUserDTO);
 
             SecLoginUserDTO secLoginUserDTO= _mapper.Map<SecLoginUserDTO>(secLoginUser);
+            apiResponse.Data = secLoginUserDTO;
+            apiResponse.Success = true;
+            apiResponse.Message = "User fetched successfully.";
 
-            return secLoginUserDTO;
+            return apiResponse;
         }
 
-        public async Task<bool> SaveSecLoginUser(SecLoginUserDTO secLoginUserDTO)
+        public async Task<ApiResponse<bool>> SaveSecLoginUser(SecLoginUserDTO secLoginUserDTO)
         {
-            bool isSave=false;
+            ApiResponse<bool> apiResponse=new ApiResponse<bool>();
+
             if (secLoginUserDTO != null && secLoginUserDTO.UserName!=null)
             {
                 if(await _secLoginUserRepo.CheckUsernameExists(secLoginUserDTO.UserName))
                 {
-                    isSave = false;
-                }
-                    
+                    apiResponse.Success = false;
+                    apiResponse.Message = "Username already exists.";
+                    return apiResponse;
+                }                    
             }
             secLoginUserDTO.Password = Common.HashPassword(secLoginUserDTO.Password);
             SecLoginUser secLoginUser = _mapper.Map<SecLoginUser>(secLoginUserDTO);
             try
             {
                 await _secLoginUserRepo.SaveSecLoginUser(secLoginUser);
-                isSave=true;
+                apiResponse.Success=true;
+                apiResponse.Message="User saved successfully.";
             }
             catch (Exception ex)
             {
-                isSave = false ;
+                apiResponse.Success = false ;
+                apiResponse.Message = $"Error saving user: {ex.Message}";
             }
-            return isSave;
+            return apiResponse;
         }
     }
 }

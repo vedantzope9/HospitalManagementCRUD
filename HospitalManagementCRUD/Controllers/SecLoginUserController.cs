@@ -18,12 +18,8 @@ namespace HospitalManagementCRUD.Controllers
         [HttpGet("{userId}")]
         public async Task<IActionResult> Get(int userId)
         {
-            var secLoginUser = await _secLoginUserService.GetSecLoginUser(userId);
-            if (secLoginUser == null)
-            {
-                return NotFound();
-            }
-            return Ok(secLoginUser);
+            var response = await _secLoginUserService.GetSecLoginUser(userId);
+            return Ok(response);
         }
 
         
@@ -31,13 +27,14 @@ namespace HospitalManagementCRUD.Controllers
         [HttpPost]
         public async Task<IActionResult> SaveSecLoginUser([FromBody]SecLoginUserDTO secLoginUserDTO)
         {
-            if(await _secLoginUserService.SaveSecLoginUser(secLoginUserDTO))
+            var response = await _secLoginUserService.SaveSecLoginUser(secLoginUserDTO);
+            if (response.Success)
             {
-                return Ok();
+                return Ok(response);
             }
             else
             {
-                return BadRequest();
+                return BadRequest(response);
             }
         }
     }

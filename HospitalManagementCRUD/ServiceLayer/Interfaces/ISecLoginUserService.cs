@@ -4,7 +4,7 @@ namespace HospitalManagementCRUD.ServiceLayer.Interfaces
 {
     public interface ISecLoginUserService
     {
-        Task<SecLoginUserDTO?> GetSecLoginUser(int userId);
-        Task<bool> SaveSecLoginUser(SecLoginUserDTO secLoginUserDTO);
+        Task<ApiResponse<SecLoginUserDTO?>> GetSecLoginUser(int userId);
+        Task<ApiResponse<bool>> SaveSecLoginUser(SecLoginUserDTO secLoginUserDTO);
     }
 }
