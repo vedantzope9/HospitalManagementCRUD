@@ -1,11 +1,14 @@
 
+using System.Text;
 using HospitalManagementCRUD.CommonFunctions;
 using HospitalManagementCRUD.Models;
 using HospitalManagementCRUD.RepositoryLayer.Implementations;
 using HospitalManagementCRUD.RepositoryLayer.Interfaces;
 using HospitalManagementCRUD.ServiceLayer.Implementations;
 using HospitalManagementCRUD.ServiceLayer.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace HospitalManagementCRUD
 {
@@ -27,6 +30,21 @@ namespace HospitalManagementCRUD
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
+
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                    .AddJwtBearer(options =>
+                    {
+                        options.TokenValidationParameters = new TokenValidationParameters
+                        {
+                            ValidateIssuer = true,
+                            ValidIssuer = builder.Configuration["AppSettings:Issuer"],
+                            ValidateAudience = true,
+                            ValidAudience = builder.Configuration["AppSettings:Audience"],
+                            ValidateLifetime = true,
+                            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"]!)),
+                            ValidateIssuerSigningKey = true
+                        };
+                    });
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

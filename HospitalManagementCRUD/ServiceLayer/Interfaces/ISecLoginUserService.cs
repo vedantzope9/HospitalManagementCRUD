@@ -6,5 +6,6 @@ namespace HospitalManagementCRUD.ServiceLayer.Interfaces
     {
         Task<ApiResponse<SecLoginUserDTO?>> GetSecLoginUser(int userId);
         Task<ApiResponse<bool>> SaveSecLoginUser(SecLoginUserDTO secLoginUserDTO);
+        Task<ApiResponse<bool>> CheckLogin(LoginDTO loginDTO);
     }
 }

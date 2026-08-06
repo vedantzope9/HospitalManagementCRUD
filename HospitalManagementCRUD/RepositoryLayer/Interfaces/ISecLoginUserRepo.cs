@@ -7,5 +7,6 @@ namespace HospitalManagementCRUD.RepositoryLayer.Interfaces
         Task<SecLoginUser?> GetSecLoginUser(int userId);
         Task SaveSecLoginUser(SecLoginUser secLoginUser);
         Task<bool> CheckUsernameExists(string username);
+        Task<bool> CheckLogin(string username, string password);
     }
 }

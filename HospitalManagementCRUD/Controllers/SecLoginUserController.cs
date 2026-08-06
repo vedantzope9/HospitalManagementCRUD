@@ -1,5 +1,6 @@
 ﻿using HospitalManagementCRUD.DTOs;
 using HospitalManagementCRUD.ServiceLayer.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,6 +16,7 @@ namespace HospitalManagementCRUD.Controllers
             _secLoginUserService = secLoginUserService;
         }
 
+        [Authorize]
         [HttpGet("{userId}")]
         public async Task<IActionResult> Get(int userId)
         {
@@ -22,12 +24,24 @@ namespace HospitalManagementCRUD.Controllers
             return Ok(response);
         }
 
-        
-
         [HttpPost]
         public async Task<IActionResult> SaveSecLoginUser([FromBody]SecLoginUserDTO secLoginUserDTO)
         {
             var response = await _secLoginUserService.SaveSecLoginUser(secLoginUserDTO);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest(response);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CheckLogin([FromBody] LoginDTO loginDTO)
+        {
+            var response = await _secLoginUserService.CheckLogin(loginDTO);
             if (response.Success)
             {
                 return Ok(response);

@@ -4,6 +4,10 @@ using HospitalManagementCRUD.RepositoryLayer.Interfaces;
 using HospitalManagementCRUD.ServiceLayer.Interfaces;
 using HospitalManagementCRUD.CommonFunctions;
 using AutoMapper;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace HospitalManagementCRUD.ServiceLayer.Implementations
 {
@@ -12,11 +16,57 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
         ISecLoginUserRepo _secLoginUserRepo;
         MyMapper _myMapper;
         IMapper _mapper;
-        public SecLoginUserService(ISecLoginUserRepo secLoginUserRepo , MyMapper myMapper , IMapper mapper)
+        IConfiguration _config;
+        public SecLoginUserService(ISecLoginUserRepo secLoginUserRepo , MyMapper myMapper , IMapper mapper , IConfiguration configuration)
         {
             _secLoginUserRepo = secLoginUserRepo;
             _myMapper = myMapper;
             _mapper = mapper;
+            _config = configuration;
+        }
+
+        private string CreateToken(SecLoginUser user)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name , user.UserName),
+                new Claim(ClaimTypes.NameIdentifier , user.UserId.ToString())
+            };
+
+            var key = new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(_config.GetValue<string>("AppSettings:Token")!)
+                );
+
+            var creds = new SigningCredentials(key , SecurityAlgorithms.HmacSha256);
+
+            var tokenDescriptor = new JwtSecurityToken(
+                    issuer:_config.GetValue<string>("AppSettings:Issuer"),
+                    audience:_config.GetValue<string>("AppSettings:Audience"),
+                    claims: claims,
+                    expires:DateTime.UtcNow.AddMinutes(5),
+                    signingCredentials: creds
+                );
+
+            return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
+        }
+
+        public async Task<ApiResponse<bool>> CheckLogin(LoginDTO loginDTO)
+        {
+            ApiResponse<bool> apiResponse=new ApiResponse<bool>();
+            bool flag = await _secLoginUserRepo.CheckLogin(loginDTO.UserName, Common.HashPassword(loginDTO.Password));
+            if (flag)
+            {
+                SecLoginUser secLoginUser = _mapper.Map<SecLoginUser>(loginDTO);
+                apiResponse.Success = true;
+                apiResponse.Message = "Login successful.";
+                apiResponse.Token = CreateToken(secLoginUser);
+            }
+            else
+            {
+                apiResponse.Success = false;
+                apiResponse.Message = "Invalid username or password.";
+            }
+            return apiResponse;
         }
 
         public async Task<ApiResponse<SecLoginUserDTO?>> GetSecLoginUser(int userId)
