@@ -27,13 +27,13 @@ namespace HospitalManagementCRUD.RepositoryLayer.Implementations
             return await _context.SecLoginUsers.AnyAsync(t=>t.UserName.Equals(username));
         }
 
-        public async Task<bool> CheckLogin(string username, string password)
+        public async Task<SecLoginUser?> CheckLogin(string username, string password)
         {
             SecLoginUser? user = await _context.SecLoginUsers.FirstOrDefaultAsync(t => t.UserName.Equals(username));
             if (user!=null && user.Password.Equals(password)) { 
-                return true;
+                return user;
             }
-            return false;
+            return null;
         }
     }
 }

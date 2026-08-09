@@ -30,7 +30,8 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name , user.UserName),
-                new Claim(ClaimTypes.NameIdentifier , user.UserId.ToString())
+                new Claim(ClaimTypes.NameIdentifier , user.UserId.ToString()),
+                new Claim(ClaimTypes.Role , ((MyEnum.Role)user.Role).ToString())
             };
 
             var key = new SymmetricSecurityKey(
@@ -53,10 +54,9 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
         public async Task<ApiResponse<bool>> CheckLogin(LoginDTO loginDTO)
         {
             ApiResponse<bool> apiResponse=new ApiResponse<bool>();
-            bool flag = await _secLoginUserRepo.CheckLogin(loginDTO.UserName, Common.HashPassword(loginDTO.Password));
-            if (flag)
+            SecLoginUser? secLoginUser = await _secLoginUserRepo.CheckLogin(loginDTO.UserName, Common.HashPassword(loginDTO.Password));
+            if (secLoginUser != null)
             {
-                SecLoginUser secLoginUser = _mapper.Map<SecLoginUser>(loginDTO);
                 apiResponse.Success = true;
                 apiResponse.Message = "Login successful.";
                 apiResponse.Token = CreateToken(secLoginUser);
@@ -85,6 +85,8 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
             //secLoginUserDTO= _myMapper.MapEntityToDto<SecLoginUser, SecLoginUserDTO>(secLoginUser, secLoginUserDTO);
 
             SecLoginUserDTO secLoginUserDTO= _mapper.Map<SecLoginUserDTO>(secLoginUser);
+            secLoginUserDTO.RoleValue = ((MyEnum.Role)secLoginUser.Role).ToString();
+            secLoginUserDTO.GenderValue = ((MyEnum.Gender)secLoginUser.Gender).ToString();
             apiResponse.Data = secLoginUserDTO;
             apiResponse.Success = true;
             apiResponse.Message = "User fetched successfully.";
@@ -107,6 +109,10 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
             }
             secLoginUserDTO.Password = Common.HashPassword(secLoginUserDTO.Password);
             SecLoginUser secLoginUser = _mapper.Map<SecLoginUser>(secLoginUserDTO);
+
+            secLoginUser.Gender = (int)Enum.Parse(typeof(MyEnum.Gender) , secLoginUserDTO.GenderValue);
+            secLoginUser.Role = (int)Enum.Parse(typeof(MyEnum.Role) , secLoginUserDTO.RoleValue);
+
             try
             {
                 await _secLoginUserRepo.SaveSecLoginUser(secLoginUser);

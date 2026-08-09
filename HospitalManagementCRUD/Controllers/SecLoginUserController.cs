@@ -1,7 +1,9 @@
-﻿using HospitalManagementCRUD.DTOs;
+﻿using HospitalManagementCRUD.CommonFunctions;
+using HospitalManagementCRUD.DTOs;
 using HospitalManagementCRUD.ServiceLayer.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HospitalManagementCRUD.Controllers
@@ -22,6 +24,13 @@ namespace HospitalManagementCRUD.Controllers
         {
             var response = await _secLoginUserService.GetSecLoginUser(userId);
             return Ok(response);
+        }
+
+        [Authorize(Roles = "Doctor,Admin")]
+        [HttpGet("doctors-only")]
+        public IActionResult DoctorsOnlyEndpoint()
+        {
+            return Ok("This is only Doctor's endpoint");
         }
 
         [HttpPost]
