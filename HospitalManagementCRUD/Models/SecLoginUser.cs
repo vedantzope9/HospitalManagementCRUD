@@ -20,6 +20,8 @@ public partial class SecLoginUser
     public int Role { get; set; }
 
     public bool IsActive { get; set; }
+    public string? RefreshToken { get; set; }
+    public DateTime? RefreshTokenExpiryTime { get; set; }
 
     public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 

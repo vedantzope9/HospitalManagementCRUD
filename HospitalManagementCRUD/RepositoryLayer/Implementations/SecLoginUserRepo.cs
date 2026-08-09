@@ -35,5 +35,10 @@ namespace HospitalManagementCRUD.RepositoryLayer.Implementations
             }
             return null;
         }
+
+        public async Task SaveChangesAsyncContext()
+        {
+            await _context.SaveChangesAsync();
+        }
     }
 }

@@ -60,5 +60,18 @@ namespace HospitalManagementCRUD.Controllers
                 return BadRequest(response);
             }
         }
+
+        [Authorize]
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken(RefreshTokenRequestDTO requestDTO)
+        {
+            var response = await _secLoginUserService.RefreshTokenAsync(requestDTO);
+
+            if(response.Success==false)
+            {
+                return Unauthorized(response.Message);
+            }
+            return Ok(response);
+        }
     }
 }

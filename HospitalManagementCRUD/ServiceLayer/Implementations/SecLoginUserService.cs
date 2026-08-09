@@ -8,16 +8,18 @@ using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
+using System.Reflection.Metadata.Ecma335;
 
 namespace HospitalManagementCRUD.ServiceLayer.Implementations
 {
-    public class SecLoginUserService:ISecLoginUserService
+    public class SecLoginUserService : ISecLoginUserService
     {
         ISecLoginUserRepo _secLoginUserRepo;
         MyMapper _myMapper;
         IMapper _mapper;
         IConfiguration _config;
-        public SecLoginUserService(ISecLoginUserRepo secLoginUserRepo , MyMapper myMapper , IMapper mapper , IConfiguration configuration)
+        public SecLoginUserService(ISecLoginUserRepo secLoginUserRepo, MyMapper myMapper, IMapper mapper, IConfiguration configuration)
         {
             _secLoginUserRepo = secLoginUserRepo;
             _myMapper = myMapper;
@@ -38,17 +40,63 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
                     Encoding.UTF8.GetBytes(_config.GetValue<string>("AppSettings:Token")!)
                 );
 
-            var creds = new SigningCredentials(key , SecurityAlgorithms.HmacSha256);
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var tokenDescriptor = new JwtSecurityToken(
-                    issuer:_config.GetValue<string>("AppSettings:Issuer"),
-                    audience:_config.GetValue<string>("AppSettings:Audience"),
+                    issuer: _config.GetValue<string>("AppSettings:Issuer"),
+                    audience: _config.GetValue<string>("AppSettings:Audience"),
                     claims: claims,
-                    expires:DateTime.UtcNow.AddMinutes(5),
+                    expires: DateTime.UtcNow.AddMinutes(5),
                     signingCredentials: creds
                 );
 
             return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
+        }
+
+        private string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+            using var rand = RandomNumberGenerator.Create();
+            rand.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
+        }
+
+        private async Task<string> GenerateAndSaveRefreshTokenAsync(SecLoginUser user)
+        {
+            var refreshToken = GenerateRefreshToken();
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddMinutes(5);
+            await _secLoginUserRepo.SaveChangesAsyncContext();
+            return refreshToken;
+        }
+
+        private async Task<SecLoginUser?> ValidateRefreshToken(RefreshTokenRequestDTO dto)
+        {
+            SecLoginUser? user = await _secLoginUserRepo.GetSecLoginUser(dto.UserId);
+
+            if (user is null || user.RefreshToken != dto.AccessToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            {
+                return null;
+            }
+            return user;
+        }
+
+        public async Task<ApiResponse<bool>> RefreshTokenAsync(RefreshTokenRequestDTO dto)
+        {
+            ApiResponse<bool> apiResponse = new ApiResponse<bool>();
+
+            SecLoginUser? user = await ValidateRefreshToken(dto);
+            if (user is null)
+            {
+                apiResponse.Success = false;
+                apiResponse.Data = false;
+                apiResponse.Message = "Invalid refresh token";
+                return apiResponse;
+            }
+            apiResponse.Success = true;
+            apiResponse.AccessToken = CreateToken(user);
+            apiResponse.RefreshToken = await GenerateAndSaveRefreshTokenAsync(user);
+            return apiResponse;   
         }
 
         public async Task<ApiResponse<bool>> CheckLogin(LoginDTO loginDTO)
@@ -59,7 +107,8 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
             {
                 apiResponse.Success = true;
                 apiResponse.Message = "Login successful.";
-                apiResponse.Token = CreateToken(secLoginUser);
+                apiResponse.AccessToken = CreateToken(secLoginUser);
+                apiResponse.RefreshToken = await GenerateAndSaveRefreshTokenAsync(secLoginUser);
             }
             else
             {
