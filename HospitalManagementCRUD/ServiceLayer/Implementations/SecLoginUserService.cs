@@ -15,10 +15,10 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
 {
     public class SecLoginUserService : ISecLoginUserService
     {
-        ISecLoginUserRepo _secLoginUserRepo;
-        MyMapper _myMapper;
-        IMapper _mapper;
-        IConfiguration _config;
+        private readonly ISecLoginUserRepo _secLoginUserRepo;
+        private readonly MyMapper _myMapper;
+        private readonly IMapper _mapper;
+        private readonly IConfiguration _config;
         public SecLoginUserService(ISecLoginUserRepo secLoginUserRepo, MyMapper myMapper, IMapper mapper, IConfiguration configuration)
         {
             _secLoginUserRepo = secLoginUserRepo;

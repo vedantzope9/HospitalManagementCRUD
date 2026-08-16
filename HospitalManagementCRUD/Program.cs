@@ -1,4 +1,3 @@
-
 using System.Text;
 using HospitalManagementCRUD.CommonFunctions;
 using HospitalManagementCRUD.Models;
@@ -9,6 +8,7 @@ using HospitalManagementCRUD.ServiceLayer.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Scalar.AspNetCore;
 
 namespace HospitalManagementCRUD
 {
@@ -22,7 +22,9 @@ namespace HospitalManagementCRUD
 
             builder.Services.AddScoped<ISecLoginUserRepo, SecLoginUserRepo>();
             builder.Services.AddScoped<ISecLoginUserService, SecLoginUserService>();
-            builder.Services.AddScoped<MyMapper, MyMapper>();
+            builder.Services.AddSingleton<MyMapper, MyMapper>();
+            builder.Services.AddScoped<IDoctorRepo, DoctorRepo>();
+            builder.Services.AddScoped<IDoctorService, DoctorService>();
 
             builder.Services.AddAutoMapper(typeof(Program));
 
@@ -50,6 +52,8 @@ namespace HospitalManagementCRUD
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            //builder.Services.AddOpenApi();
 
             var app = builder.Build();
 
