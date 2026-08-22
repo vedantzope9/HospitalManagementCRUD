@@ -26,6 +26,8 @@ namespace HospitalManagementCRUD
             builder.Services.AddScoped<IDoctorRepo, DoctorRepo>();
             builder.Services.AddScoped<IDoctorService, DoctorService>();
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IHospitalRepo, HospitalRepo>();
+            builder.Services.AddScoped<IHospitalService, HospitalService>();
 
             builder.Services.AddAutoMapper(typeof(Program));
             builder.Services.AddHttpContextAccessor();

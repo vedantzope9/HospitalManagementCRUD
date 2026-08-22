@@ -10,6 +10,7 @@ namespace HospitalManagementCRUD.CommonFunctions
             CreateMap<SecLoginUser , SecLoginUserDTO>().ReverseMap();
             CreateMap<SecLoginUser , LoginDTO>().ReverseMap();
             CreateMap<Doctor , DoctorDTO>().ReverseMap();
+            CreateMap<Hospital , HospitalDTO>().ReverseMap();
         }
     }
 }
