@@ -8,7 +8,7 @@
 
         public int? HospitalId { get; set; }
 
-        public int Specialization { get; set; }
+        public string Specialization { get; set; }
 
         public string? Qualification { get; set; }
 

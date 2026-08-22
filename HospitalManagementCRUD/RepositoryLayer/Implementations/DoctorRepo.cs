@@ -7,8 +7,8 @@ namespace HospitalManagementCRUD.RepositoryLayer.Implementations
     public class DoctorRepo : IDoctorRepo
     {
         private readonly HospitalDbContext _context;
-        public DoctorRepo(HospitalDbContext context) 
-        { 
+        public DoctorRepo(HospitalDbContext context)
+        {
             _context = context;
         }
         public async Task<Doctor?> GetDoctorByUserIdAsync(int userId)
@@ -21,4 +21,5 @@ namespace HospitalManagementCRUD.RepositoryLayer.Implementations
             await _context.Doctors.AddAsync(doctor);
             await _context.SaveChangesAsync();
         }
+    }
 }
