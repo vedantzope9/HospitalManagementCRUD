@@ -10,6 +10,7 @@ using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Reflection.Metadata.Ecma335;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HospitalManagementCRUD.ServiceLayer.Implementations
 {
@@ -19,15 +20,17 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
         private readonly MyMapper _myMapper;
         private readonly IMapper _mapper;
         private readonly IConfiguration _config;
-        public SecLoginUserService(ISecLoginUserRepo secLoginUserRepo, MyMapper myMapper, IMapper mapper, IConfiguration configuration)
+        private readonly ICommonRepo _commonRepo;
+        public SecLoginUserService(ISecLoginUserRepo secLoginUserRepo, MyMapper myMapper, IMapper mapper, IConfiguration configuration , ICommonRepo commonRepo)
         {
             _secLoginUserRepo = secLoginUserRepo;
             _myMapper = myMapper;
             _mapper = mapper;
             _config = configuration;
+            _commonRepo = commonRepo;
         }
 
-        private string CreateToken(SecLoginUser user)
+        public string CreateToken(SecLoginUser user)
         {
             var claims = new List<Claim>
             {
@@ -61,12 +64,12 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
             return Convert.ToBase64String(randomNumber);
         }
 
-        private async Task<string> GenerateAndSaveRefreshTokenAsync(SecLoginUser user)
+        public async Task<string> GenerateAndSaveRefreshTokenAsync(SecLoginUser user)
         {
             var refreshToken = GenerateRefreshToken();
             user.RefreshToken = refreshToken;
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddMinutes(5);
-            await _secLoginUserRepo.SaveChangesAsyncContext();
+            await _commonRepo.SaveChangesAsyncContext();
             return refreshToken;
         }
 
@@ -146,6 +149,12 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
         public async Task<ApiResponse<bool>> SaveSecLoginUser(SecLoginUserDTO secLoginUserDTO)
         {
             ApiResponse<bool> apiResponse=new ApiResponse<bool>();
+            if (secLoginUserDTO.RoleValue == MyEnum.Role.Doctor.ToString())
+            {
+                apiResponse.Success = false;
+                apiResponse.Message = "Please register yourself as Doctor from RegisterAsDoctor endpoint.";
+                return apiResponse;
+            }
 
             if (secLoginUserDTO != null && secLoginUserDTO.UserName!=null)
             {
@@ -166,7 +175,7 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
             {
                 await _secLoginUserRepo.SaveSecLoginUser(secLoginUser);
                 apiResponse.Success=true;
-                apiResponse.Message="User saved successfully.";
+                apiResponse.Message = "User saved successfully.";
             }
             catch (Exception ex)
             {

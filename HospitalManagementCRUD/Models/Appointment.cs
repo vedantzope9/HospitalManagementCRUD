@@ -24,6 +24,7 @@ public partial class Appointment
     public DateTime? LastModifiedDate { get; set; }
 
     public int UserId { get; set; }
+    public int LockId { get; set; }
 
     public virtual Doctor Doctor { get; set; } = null!;
 

@@ -28,6 +28,7 @@ namespace HospitalManagementCRUD
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IHospitalRepo, HospitalRepo>();
             builder.Services.AddScoped<IHospitalService, HospitalService>();
+            builder.Services.AddScoped<ICommonRepo, CommonRepo>();
 
             builder.Services.AddAutoMapper(typeof(Program));
             builder.Services.AddHttpContextAccessor();
@@ -58,7 +59,7 @@ namespace HospitalManagementCRUD
             builder.Services.AddSwaggerGen();
 
             //builder.Services.AddOpenApi();
-
+            var services = builder.Services;
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

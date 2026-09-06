@@ -15,7 +15,7 @@ namespace HospitalManagementCRUD.Controllers
         {
             _doctorService = doctorService;
         }
-        [Authorize(Roles ="Doctor")]
+        [Authorize(Roles ="Doctor , Admin")]
         [HttpGet]
         public async Task<IActionResult> GetMyInfoAsDoctor()
         {
@@ -26,11 +26,21 @@ namespace HospitalManagementCRUD.Controllers
                 return NotFound(response.Message);
         }
 
-        [Authorize]
+        [Authorize(Roles ="Admin,User")]
         [HttpPost]
-        public async Task<IActionResult> RegisterAsDoctor([FromBody]DoctorDTO doctorDTO)
+        public async Task<IActionResult> RegisterUserAsDoctor([FromBody] DoctorDTO doctorDTO)
         {
-            var response = await _doctorService.RegisterAsDoctor(doctorDTO);
+            var response = await _doctorService.RegisterUserAsDoctor(doctorDTO);
+            if (response.Success)
+                return Ok(response);
+            else
+                return NotFound(response.Message);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RegisterAsDoctor([FromBody] RegisterDoctorDTO registerDoctorDTO)
+        {
+            var response = await _doctorService.RegisterAsDoctor(registerDoctorDTO);
             if (response.Success)
                 return Ok(response.Message);
             else

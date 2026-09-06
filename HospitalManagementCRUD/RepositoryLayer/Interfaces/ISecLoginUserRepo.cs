@@ -8,6 +8,6 @@ namespace HospitalManagementCRUD.RepositoryLayer.Interfaces
         Task SaveSecLoginUser(SecLoginUser secLoginUser);
         Task<bool> CheckUsernameExists(string username);
         Task<SecLoginUser?> CheckLogin(string username, string password);
-        Task SaveChangesAsyncContext();
+        Task<int> ChangeRoleFromUserToDoctor(int userId);
     }
 }

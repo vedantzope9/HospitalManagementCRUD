@@ -18,7 +18,7 @@ public partial class Hospital
     public string? PhoneNumber { get; set; }
 
     public string? Email { get; set; }
-
+    public int LockId { get; set; }
     public bool IsActive { get; set; }
 
     public virtual ICollection<Doctor> Doctors { get; set; } = new List<Doctor>();

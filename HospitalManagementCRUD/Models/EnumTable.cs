@@ -18,4 +18,5 @@ public partial class EnumTable
     public DateTime? LastModifiedDate { get; set; }
 
     public bool IsActive { get; set; }
+    public int LockId { get; set; }
 }

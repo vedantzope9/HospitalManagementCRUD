@@ -1,4 +1,5 @@
-﻿using HospitalManagementCRUD.Models;
+﻿using HospitalManagementCRUD.CommonFunctions;
+using HospitalManagementCRUD.Models;
 using HospitalManagementCRUD.RepositoryLayer.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -36,9 +37,9 @@ namespace HospitalManagementCRUD.RepositoryLayer.Implementations
             return null;
         }
 
-        public async Task SaveChangesAsyncContext()
+        public async Task<int> ChangeRoleFromUserToDoctor(int userId)
         {
-            await _context.SaveChangesAsync();
+            return await _context.SecLoginUsers.Where(t=>t.UserId==userId).ExecuteUpdateAsync(setters => setters.SetProperty(t=>t.Role , (int)MyEnum.Role.Doctor));
         }
     }
 }

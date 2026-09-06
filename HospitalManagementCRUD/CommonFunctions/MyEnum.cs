@@ -6,7 +6,7 @@
         {
             Admin = 29,
             Doctor = 30,
-            Patient = 31
+            User = 31
         }
 
         public enum Gender

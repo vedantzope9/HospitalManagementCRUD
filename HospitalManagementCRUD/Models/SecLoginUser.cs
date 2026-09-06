@@ -18,6 +18,7 @@ public partial class SecLoginUser
     public string? Email { get; set; }
 
     public int Role { get; set; }
+    public int LockId { get; set; }
 
     public bool IsActive { get; set; }
     public string? RefreshToken { get; set; }

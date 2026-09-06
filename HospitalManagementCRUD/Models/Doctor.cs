@@ -24,6 +24,7 @@ public partial class Doctor
     public bool IsActive { get; set; }
 
     public int UserId { get; set; }
+    public int LockId { get; set; }
 
     public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 

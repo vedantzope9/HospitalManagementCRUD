@@ -1,8 +1,16 @@
 ﻿namespace HospitalManagementCRUD.DTOs
 {
-    public class DoctorDTO
+    public class RegisterDoctorDTO
     {
-        public int DoctorId { get; set; }
+        public string UserName { get; set; } = null!;
+
+        public string Password { get; set; } = null!;
+
+        public string GenderValue { get; set; }
+
+        public string PhoneNumber { get; set; } = null!;
+
+        public string? Email { get; set; }
 
         public string DoctorName { get; set; } = null!;
 
@@ -20,6 +28,5 @@
 
         public bool IsActive { get; set; }
 
-        public int UserId { get; set; }
     }
 }

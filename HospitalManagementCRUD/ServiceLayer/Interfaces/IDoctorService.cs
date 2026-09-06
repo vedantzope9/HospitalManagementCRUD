@@ -5,6 +5,7 @@ namespace HospitalManagementCRUD.ServiceLayer.Interfaces
     public interface IDoctorService
     {
         Task<ApiResponse<DoctorDTO>> GetMyInfoAsDoctor();
-        Task<ApiResponse<bool>> RegisterAsDoctor(DoctorDTO doctorDTO);
+        Task<ApiResponse<bool>> RegisterAsDoctor(RegisterDoctorDTO registerDoctorDTO);
+        Task<ApiResponse<bool>> RegisterUserAsDoctor(DoctorDTO doctorDTO);
     }
 }
