@@ -49,6 +49,17 @@ namespace HospitalManagementCRUD.Controllers
 
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpGet("{hospitalId}")]
+        public async Task<IActionResult> GetAllDoctorsOfHospital(int hospitalId)
+        {
+            var response = await _hospitalService.GetAllDoctorsOfHospital(hospitalId);
+            if(response.Success == false)
+            {
+                return NotFound(response.Message);
+            }
+            return Ok(response.Data);
+        }
 
     }
 }

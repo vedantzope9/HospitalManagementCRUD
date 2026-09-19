@@ -1,4 +1,5 @@
 ﻿using HospitalManagementCRUD.DTOs;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HospitalManagementCRUD.ServiceLayer.Interfaces
 {
@@ -6,5 +7,6 @@ namespace HospitalManagementCRUD.ServiceLayer.Interfaces
     {
         Task<ApiResponse<HospitalDTO?>> GetHospitalById(int id);
         Task<ApiResponse<bool?>> SaveHospital(HospitalDTO hospitalDTO);
+        Task<ApiResponse<List<DoctorDTO>>> GetAllDoctorsOfHospital(int hospitalId);
     }
 }

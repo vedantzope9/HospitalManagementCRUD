@@ -15,6 +15,7 @@ namespace HospitalManagementCRUD.Controllers
         {
             _doctorService = doctorService;
         }
+
         [Authorize(Roles ="Doctor , Admin")]
         [HttpGet]
         public async Task<IActionResult> GetMyInfoAsDoctor()

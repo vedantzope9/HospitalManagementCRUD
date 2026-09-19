@@ -5,6 +5,7 @@ using HospitalManagementCRUD.DTOs;
 using HospitalManagementCRUD.Models;
 using HospitalManagementCRUD.RepositoryLayer.Interfaces;
 using HospitalManagementCRUD.ServiceLayer.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HospitalManagementCRUD.ServiceLayer.Implementations
 {
