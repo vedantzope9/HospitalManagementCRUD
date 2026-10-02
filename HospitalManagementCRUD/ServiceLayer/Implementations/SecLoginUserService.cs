@@ -49,7 +49,7 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
                     issuer: _config.GetValue<string>("AppSettings:Issuer"),
                     audience: _config.GetValue<string>("AppSettings:Audience"),
                     claims: claims,
-                    expires: DateTime.UtcNow.AddMinutes(5),
+                    expires: DateTime.UtcNow.AddMinutes(15),
                     signingCredentials: creds
                 );
 
@@ -68,7 +68,7 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
         {
             var refreshToken = GenerateRefreshToken();
             user.RefreshToken = refreshToken;
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddMinutes(5);
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddMinutes(15);
             await _commonRepo.SaveChangesAsyncContext();
             return refreshToken;
         }

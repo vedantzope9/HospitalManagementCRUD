@@ -1,5 +1,6 @@
 ﻿using HospitalManagementCRUD.Models;
 using HospitalManagementCRUD.RepositoryLayer.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace HospitalManagementCRUD.RepositoryLayer.Implementations
 {
@@ -20,6 +21,11 @@ namespace HospitalManagementCRUD.RepositoryLayer.Implementations
         public async Task<Hospital?> GetHospitalById(int id)
         {
             return await _context.Hospitals.FindAsync(id);
+        }
+
+        public async Task<string?> GetHospitalNamebyId(int hospitalId)
+        {
+            return await _context.Hospitals.Where(t => t.HospitalId == hospitalId).Select(t => t.HospitalName).FirstOrDefaultAsync();
         }
     }
 }

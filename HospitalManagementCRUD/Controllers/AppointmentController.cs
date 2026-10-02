@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HospitalManagementCRUD.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class AppointmentController : ControllerBase
     {
@@ -15,7 +15,9 @@ namespace HospitalManagementCRUD.Controllers
             _appointmentService = appointmentService;
         }
 
-        public async Task<IActionResult> BookAppointment(AppointmentDTO appointmentDTO)
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> BookAppointment([FromBody]AppointmentDTO appointmentDTO)
         {
             var response = await _appointmentService.BookAppointment(appointmentDTO);
 
@@ -24,7 +26,7 @@ namespace HospitalManagementCRUD.Controllers
             return Ok(response);
         }
 
-        [Authorize(Roles = "Admin.Doctor")]
+        [Authorize(Roles = "Admin,Doctor")]
         [HttpGet]
         public async Task<IActionResult> GetMyUpcomingAppointmentAsDoctor()
         {
@@ -36,7 +38,7 @@ namespace HospitalManagementCRUD.Controllers
             return Ok(response);
         }
 
-        [Authorize(Roles = "Admin.Doctor")]
+        [Authorize(Roles = "Admin,Doctor")]
         [HttpGet]
         public async Task<IActionResult> GetAllMyAppointmentAsDoctor()
         {

@@ -17,7 +17,8 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
         private readonly ISecLoginUserRepo _secLoginUserRepo;
         private readonly ISecLoginUserService _secLoginUserService;
         private readonly ICommonRepo _commonRepo;
-        public DoctorService(IDoctorRepo doctorRepo, IMapper mapper, IUserService userService, ISecLoginUserRepo secLoginUserRepo , ICommonRepo commonRepo , ISecLoginUserService secLoginUserService) 
+        private readonly IHospitalRepo _hospitalRepo;
+        public DoctorService(IDoctorRepo doctorRepo, IMapper mapper, IUserService userService, ISecLoginUserRepo secLoginUserRepo , ICommonRepo commonRepo , ISecLoginUserService secLoginUserService , IHospitalRepo hospitalRepo) 
         { 
             _doctorRepo = doctorRepo;
             _mapper = mapper;
@@ -25,6 +26,7 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
             _secLoginUserRepo = secLoginUserRepo;
             _commonRepo = commonRepo;
             _secLoginUserService = secLoginUserService;
+            _hospitalRepo = hospitalRepo;
         }
 
         public async Task<ApiResponse<bool>> RegisterAsDoctor(RegisterDoctorDTO registerDoctorDTO)
@@ -87,6 +89,12 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
             }
             DoctorDTO doctorDTO = _mapper.Map<DoctorDTO>(doctor);
             doctorDTO.SpecializationValue=((MyEnum.Specialization)doctor.Specialization).ToString();
+
+            if (doctor.HospitalId != null)
+            {
+                doctorDTO.HospitalValue = await _hospitalRepo.GetHospitalNamebyId((int)doctor.HospitalId);
+            }
+
             return new ApiResponse<DoctorDTO>
             {
                 Success = true,

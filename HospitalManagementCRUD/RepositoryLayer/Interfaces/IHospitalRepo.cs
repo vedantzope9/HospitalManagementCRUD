@@ -6,5 +6,6 @@ namespace HospitalManagementCRUD.RepositoryLayer.Interfaces
     {
         Task SaveHospital(Hospital hospital);
         Task<Hospital?> GetHospitalById(int id);
+        Task<string?> GetHospitalNamebyId(int hospitalId);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using HospitalManagementCRUD.CommonFunctions;
 using HospitalManagementCRUD.DTOs;
 using HospitalManagementCRUD.ServiceLayer.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -69,7 +70,7 @@ namespace HospitalManagementCRUD.Controllers
 
             if(response.Success==false)
             {
-                return Unauthorized(response.Message);
+                return StatusCode(StatusCodes.Status403Forbidden,response.Message);
             }
             return Ok(response);
         }
