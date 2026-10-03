@@ -59,4 +59,7 @@ nunit-*.xml
 .vs
 
 HospitalManagementCRUD/appsettings.json
+LoggerService/appsettings.json
 HospitalManagementCRUD/HospitalManagementCRUD.csproj
+LoggerService/LoggerService.csproj
+ErrorLogs/
