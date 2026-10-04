@@ -62,4 +62,8 @@ HospitalManagementCRUD/appsettings.json
 LoggerService/appsettings.json
 HospitalManagementCRUD/HospitalManagementCRUD.csproj
 LoggerService/LoggerService.csproj
+LoggerService/.config
+LoggerService/Properties/PublishProfiles/
 ErrorLogs/
+LoggerService/LoggerService.csproj.user
+LoggerService/LoggerService.csproj.user
