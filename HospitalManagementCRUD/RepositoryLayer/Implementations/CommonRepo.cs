@@ -1,6 +1,6 @@
 ﻿using HospitalManagementCRUD.Models;
 using HospitalManagementCRUD.RepositoryLayer.Interfaces;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace HospitalManagementCRUD.RepositoryLayer.Implementations
 {
@@ -16,9 +16,9 @@ namespace HospitalManagementCRUD.RepositoryLayer.Implementations
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task BeginTransactionAsync()
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
         {
-            await _dbContext.Database.BeginTransactionAsync();
+            return await _dbContext.Database.BeginTransactionAsync();
         }
 
         public async Task CommitTransactionAsync()

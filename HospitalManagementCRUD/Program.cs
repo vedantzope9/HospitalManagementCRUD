@@ -23,7 +23,7 @@ namespace HospitalManagementCRUD
 
             builder.Services.AddScoped<ISecLoginUserRepo, SecLoginUserRepo>();
             builder.Services.AddScoped<ISecLoginUserService, SecLoginUserService>();
-            builder.Services.AddSingleton<MyMapper, MyMapper>();
+            builder.Services.AddSingleton<MyMapper>();
             builder.Services.AddScoped<IDoctorRepo, DoctorRepo>();
             builder.Services.AddScoped<IDoctorService, DoctorService>();
             builder.Services.AddScoped<IUserService, UserService>();
@@ -32,9 +32,16 @@ namespace HospitalManagementCRUD
             builder.Services.AddScoped<ICommonRepo, CommonRepo>();
             builder.Services.AddScoped<IAppointmentRepo, AppointmentRepo>();
             builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+            builder.Services.AddSingleton<ICommonServiceCalls, CommonServiceCalls>();
 
             builder.Services.AddAutoMapper(typeof(Program));
             builder.Services.AddHttpContextAccessor();
+
+            builder.Services.AddHttpClient("LoggerService", client =>
+            {
+                client.BaseAddress = new Uri("https://localhost:8080/demo/LoggerService/");
+                client.Timeout = TimeSpan.FromSeconds(10);
+            });
 
             builder.Services.AddDbContext<HospitalDbContext>(options =>
             {

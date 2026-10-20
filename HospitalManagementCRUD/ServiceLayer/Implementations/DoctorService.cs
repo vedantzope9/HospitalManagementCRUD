@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using System.Transactions;
 using AutoMapper;
 using HospitalManagementCRUD.CommonFunctions;
 using HospitalManagementCRUD.DTOs;
@@ -6,6 +7,7 @@ using HospitalManagementCRUD.Models;
 using HospitalManagementCRUD.RepositoryLayer.Interfaces;
 using HospitalManagementCRUD.ServiceLayer.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace HospitalManagementCRUD.ServiceLayer.Implementations
 {
@@ -18,7 +20,8 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
         private readonly ISecLoginUserService _secLoginUserService;
         private readonly ICommonRepo _commonRepo;
         private readonly IHospitalRepo _hospitalRepo;
-        public DoctorService(IDoctorRepo doctorRepo, IMapper mapper, IUserService userService, ISecLoginUserRepo secLoginUserRepo , ICommonRepo commonRepo , ISecLoginUserService secLoginUserService , IHospitalRepo hospitalRepo) 
+        private readonly ICommonServiceCalls _serviceCalls;
+        public DoctorService(IDoctorRepo doctorRepo, IMapper mapper, IUserService userService, ISecLoginUserRepo secLoginUserRepo , ICommonRepo commonRepo , ISecLoginUserService secLoginUserService , IHospitalRepo hospitalRepo , ICommonServiceCalls serviceCalls) 
         { 
             _doctorRepo = doctorRepo;
             _mapper = mapper;
@@ -27,9 +30,10 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
             _commonRepo = commonRepo;
             _secLoginUserService = secLoginUserService;
             _hospitalRepo = hospitalRepo;
+            _serviceCalls = serviceCalls;
         }
 
-        public async Task<ApiResponse<bool>> RegisterAsDoctor(RegisterDoctorDTO registerDoctorDTO)
+        public async Task<ApiResponse<bool>> RegisterNewUserAsDoctor(RegisterDoctorDTO registerDoctorDTO)
         {
             ApiResponse<bool> apiResponse = new ApiResponse<bool>();
             try
@@ -38,12 +42,12 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
                 SecLoginUser secLoginUser = _mapper.Map<SecLoginUser>(registerDoctorDTO);
 
                 secLoginUser.Role = (int)MyEnum.Role.Doctor;
-                secLoginUser.Gender = (int)Enum.Parse(typeof(MyEnum.Gender), registerDoctorDTO.GenderValue);
+                secLoginUser.Gender = (int)Enum.Parse(typeof(MyEnum.Gender), registerDoctorDTO.GenderValue,true);
                 secLoginUser.IsActive = true;
 
                 Doctor doctor = _mapper.Map<Doctor>(registerDoctorDTO);
                 doctor.IsActive = true;     
-                doctor.Specialization = (int)Enum.Parse(typeof(MyEnum.Specialization), registerDoctorDTO.SpecializationValue);
+                doctor.Specialization = (int)Enum.Parse(typeof(MyEnum.Specialization), registerDoctorDTO.SpecializationValue, true);
                 doctor.HospitalId = null;
 
                 await _commonRepo.BeginTransactionAsync();
@@ -59,6 +63,7 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
             catch(Exception ex)
             {
                 await _commonRepo.RollBackTransactionAsync();
+                _serviceCalls.Log(MyEnum.LoggerType.WriteAndSaveLog, ex.Message, "RegisterNewUserAsDoctor", ex.StackTrace);
                 apiResponse.Success = false;
                 apiResponse.Message = "Fail to register Doctor.";
                 return apiResponse;
@@ -103,18 +108,19 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
             };
         }
 
-        public async Task<ApiResponse<bool>> RegisterUserAsDoctor(DoctorDTO doctorDTO)
+        public async Task<ApiResponse<bool>> RegisterExistingUserAsDoctor(DoctorDTO doctorDTO)
         {
             ApiResponse<bool> apiResponse = new ApiResponse<bool>();
 
+            IDbContextTransaction transaction = null;
             try
             {
                 Doctor doctor = _mapper.Map<Doctor>(doctorDTO);
                 doctor.HospitalId = null;
-                doctor.Specialization = (int)(Enum.Parse(typeof(MyEnum.Specialization), doctorDTO.SpecializationValue));
+                doctor.Specialization = (int)(Enum.Parse(typeof(MyEnum.Specialization), doctorDTO.SpecializationValue , true));
                 doctor.UserId = _userService.UserId;
 
-                await _commonRepo.BeginTransactionAsync();
+                transaction = await _commonRepo.BeginTransactionAsync();
                 await _doctorRepo.SaveDoctorAsync(doctor);
 
                 if (_userService.Role == MyEnum.Role.User.ToString())
@@ -122,7 +128,10 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
                     int updatedRecords = await _secLoginUserRepo.ChangeRoleFromUserToDoctor(_userService.UserId);
                     if (updatedRecords != 1)
                     {
-                        await _commonRepo.RollBackTransactionAsync();
+                        if (transaction != null)
+                        {
+                            await _commonRepo.RollBackTransactionAsync();
+                        }
                         apiResponse.Success = false;
                         apiResponse.Message= "Error Occurred. Failed to change role from User to Doctor.";
                         return apiResponse;
@@ -142,8 +151,11 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
             }
             catch (Exception ex)
             {
-                await _commonRepo.RollBackTransactionAsync();
+                if (transaction!=null) {
+                    await _commonRepo.RollBackTransactionAsync();
+                }
                 apiResponse.Success = false;
+                _serviceCalls.Log(MyEnum.LoggerType.WriteAndSaveLog, ex.Message, "RegisterExistingUserAsDoctor", ex.StackTrace);
             }           
             
             return apiResponse;

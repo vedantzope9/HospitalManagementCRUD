@@ -1,9 +1,11 @@
-﻿namespace HospitalManagementCRUD.RepositoryLayer.Interfaces
+﻿using Microsoft.EntityFrameworkCore.Storage;
+
+namespace HospitalManagementCRUD.RepositoryLayer.Interfaces
 {
     public interface ICommonRepo
     {
         Task SaveChangesAsyncContext();
-        Task BeginTransactionAsync();
+        Task<IDbContextTransaction> BeginTransactionAsync();
         Task CommitTransactionAsync();
         Task RollBackTransactionAsync();
     }

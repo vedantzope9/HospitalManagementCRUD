@@ -16,12 +16,15 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
         private readonly IMapper _mapper;
         private readonly IUserService _userService;
         private readonly ISecLoginUserRepo _secLoginUserRepo;
-        public AppointmentService(IAppointmentRepo appointmentRepo, IDoctorRepo doctorRepo, IMapper mapper, IUserService userService, ISecLoginUserRepo secLoginUserRepo) { 
+        private readonly ICommonServiceCalls _serviceCalls;
+        public AppointmentService(IAppointmentRepo appointmentRepo, IDoctorRepo doctorRepo, IMapper mapper, IUserService userService, ISecLoginUserRepo secLoginUserRepo, ICommonServiceCalls serviceCalls)
+        {
             _appointmentRepo = appointmentRepo;
             _doctorRepo = doctorRepo;
-            _mapper = mapper;   
+            _mapper = mapper;
             _userService = userService;
             _secLoginUserRepo = secLoginUserRepo;
+            _serviceCalls = serviceCalls;
         }
 
         public async Task<ApiResponse<bool>> BookAppointment(AppointmentDTO appointmentDTO)
@@ -66,6 +69,7 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
             }
             catch(Exception ex)
             {
+                _serviceCalls.Log(MyEnum.LoggerType.WriteAndSaveLog, ex.Message, "BookAppointment", ex.StackTrace);
                 apiResponse.Success=false;
                 apiResponse.Message=ex.Message;
                 return apiResponse;
@@ -105,6 +109,7 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
             }
             catch (Exception ex)
             {
+                _serviceCalls.Log(MyEnum.LoggerType.WriteAndSaveLog, ex.Message, "GetAllMyAppointmentAsDoctor", ex.StackTrace);
                 apiResponse.Success = false;
                 apiResponse.Message = ex.Message;
             }
@@ -144,6 +149,7 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
             }
             catch (Exception ex)
             {
+                _serviceCalls.Log(MyEnum.LoggerType.WriteAndSaveLog, ex.Message, "GetMyUpcomingAppointmentAsDoctor", ex.StackTrace);
                 apiResponse.Success = false;
                 apiResponse.Message = ex.Message;
             }

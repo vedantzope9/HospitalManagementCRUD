@@ -29,19 +29,19 @@ namespace HospitalManagementCRUD.Controllers
 
         [Authorize(Roles ="Admin,User")]
         [HttpPost]
-        public async Task<IActionResult> RegisterUserAsDoctor([FromBody] DoctorDTO doctorDTO)
+        public async Task<IActionResult> RegisterExistingUserAsDoctor([FromBody] DoctorDTO doctorDTO)
         {
-            var response = await _doctorService.RegisterUserAsDoctor(doctorDTO);
+            var response = await _doctorService.RegisterExistingUserAsDoctor(doctorDTO);
             if (response.Success)
                 return Ok(response);
-            else
+            else 
                 return NotFound(response.Message);
         }
 
         [HttpPost]
-        public async Task<IActionResult> RegisterAsDoctor([FromBody] RegisterDoctorDTO registerDoctorDTO)
+        public async Task<IActionResult> RegisterNewUserAsDoctor([FromBody] RegisterDoctorDTO registerDoctorDTO)
         {
-            var response = await _doctorService.RegisterAsDoctor(registerDoctorDTO);
+            var response = await _doctorService.RegisterNewUserAsDoctor(registerDoctorDTO);
             if (response.Success)
                 return Ok(response.Message);
             else

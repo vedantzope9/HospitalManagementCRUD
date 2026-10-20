@@ -48,5 +48,12 @@
             Anesthesiologist = 27,
             Emergency_Medicine = 28
         }
+
+        public enum LoggerType
+        {
+            WriteLog = 1,
+            SaveLog = 2,
+            WriteAndSaveLog=3
+        }
     }
 }

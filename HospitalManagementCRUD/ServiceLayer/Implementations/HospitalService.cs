@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using HospitalManagementCRUD.CommonFunctions;
 using HospitalManagementCRUD.DTOs;
 using HospitalManagementCRUD.Models;
 using HospitalManagementCRUD.RepositoryLayer.Interfaces;
@@ -11,11 +12,14 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
         private readonly IHospitalRepo _hospitalRepo;
         private readonly IMapper _mapper;
         private readonly IDoctorRepo _doctorRepo;
-        public HospitalService(IHospitalRepo hospitalRepo , IDoctorRepo doctorRepo ,IMapper mapper) 
+        private readonly ICommonServiceCalls _serviceCalls;
+
+        public HospitalService(IHospitalRepo hospitalRepo , IDoctorRepo doctorRepo ,IMapper mapper , ICommonServiceCalls serviceCalls) 
         {
             _hospitalRepo = hospitalRepo;
             _doctorRepo = doctorRepo;
             _mapper = mapper;
+            _serviceCalls = serviceCalls;
         }
 
         public async Task<ApiResponse<HospitalDTO?>> GetHospitalById(int id)
@@ -55,6 +59,7 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
             }
             catch(Exception ex)
             {
+                _serviceCalls.Log(MyEnum.LoggerType.WriteAndSaveLog, ex.Message, "SaveHospital", ex.StackTrace);
                 apiResponse.Success = false;
                 apiResponse.Message = "Failed to save Hospital "+ex.Message;
                 return apiResponse;
@@ -84,6 +89,7 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
             }
             catch (Exception ex)
             {
+                _serviceCalls.Log(MyEnum.LoggerType.WriteAndSaveLog, ex.Message, "GetAllDoctorsOfHospital", ex.StackTrace);
                 apiResponse.Success= false;
                 apiResponse.Message= ex.Message;
             }

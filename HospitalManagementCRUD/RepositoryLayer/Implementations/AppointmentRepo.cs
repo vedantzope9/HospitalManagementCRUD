@@ -24,7 +24,11 @@ namespace HospitalManagementCRUD.RepositoryLayer.Implementations
 
         public async Task<List<Appointment>> GetUpcomingAppointmentsByDoctorIdAsync(int doctorId)
         {
-            return await _context.Appointments.Where(t => t.DoctorId == doctorId && t.AppointmentDate >= DateOnly.FromDateTime(DateTime.UtcNow) && t.AppointmentTime >= TimeOnly.FromDateTime(DateTime.UtcNow) ).ToListAsync();
+            var currDate = DateOnly.FromDateTime(DateTime.UtcNow);
+            var currTime = TimeOnly.FromDateTime(DateTime.UtcNow);
+
+
+            return await _context.Appointments.Where(t => t.DoctorId == doctorId && t.AppointmentDate >= currDate && t.AppointmentTime >= currTime).ToListAsync();
         }
     }
 }

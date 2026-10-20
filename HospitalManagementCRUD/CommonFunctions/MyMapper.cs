@@ -1,7 +1,14 @@
-﻿namespace HospitalManagementCRUD.CommonFunctions
+﻿using HospitalManagementCRUD.ServiceLayer.Interfaces;
+
+namespace HospitalManagementCRUD.CommonFunctions
 {
     public class MyMapper
     {
+        private readonly ICommonServiceCalls _serviceCalls;
+        public MyMapper(ICommonServiceCalls serviceCalls)
+        {
+            _serviceCalls = serviceCalls;
+        }
         internal D MapEntityToDto<E,D>(E entity , D dto)
         {
             try
@@ -18,7 +25,9 @@
                     }
                 }
             }
-            catch(Exception ex) { }
+            catch(Exception ex) {
+                 _serviceCalls.Log(MyEnum.LoggerType.WriteAndSaveLog, ex.Message, "MyMapper", ex.StackTrace);
+            }
 
             return dto;
         }

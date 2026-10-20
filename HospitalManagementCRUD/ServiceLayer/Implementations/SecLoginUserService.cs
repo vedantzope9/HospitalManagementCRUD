@@ -21,13 +21,15 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
         private readonly IMapper _mapper;
         private readonly IConfiguration _config;
         private readonly ICommonRepo _commonRepo;
-        public SecLoginUserService(ISecLoginUserRepo secLoginUserRepo, MyMapper myMapper, IMapper mapper, IConfiguration configuration , ICommonRepo commonRepo)
+        private readonly ICommonServiceCalls _serviceCalls;
+        public SecLoginUserService(ISecLoginUserRepo secLoginUserRepo, MyMapper myMapper, IMapper mapper, IConfiguration configuration , ICommonRepo commonRepo, ICommonServiceCalls serviceCalls)
         {
             _secLoginUserRepo = secLoginUserRepo;
             _myMapper = myMapper;
             _mapper = mapper;
             _config = configuration;
             _commonRepo = commonRepo;
+            _serviceCalls = serviceCalls;
         }
 
         public string CreateToken(SecLoginUser user)
@@ -124,24 +126,33 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
         public async Task<ApiResponse<SecLoginUserDTO?>> GetSecLoginUser(int userId)
         {
             ApiResponse<SecLoginUserDTO?> apiResponse = new ApiResponse<SecLoginUserDTO?>();
-            SecLoginUser? secLoginUser = await _secLoginUserRepo.GetSecLoginUser(userId);
-
-            if (secLoginUser == null)
+            try
             {
-                apiResponse.Success = false;
-                apiResponse.Message = "No User Found.";
-                return apiResponse;
+                SecLoginUser? secLoginUser = await _secLoginUserRepo.GetSecLoginUser(userId);
+
+                if (secLoginUser == null)
+                {
+                    apiResponse.Success = false;
+                    apiResponse.Message = "No User Found.";
+                    return apiResponse;
+                }
+
+                //SecLoginUserDTO? secLoginUserDTO=new SecLoginUserDTO();
+                //secLoginUserDTO= _myMapper.MapEntityToDto<SecLoginUser, SecLoginUserDTO>(secLoginUser, secLoginUserDTO);
+
+                SecLoginUserDTO secLoginUserDTO = _mapper.Map<SecLoginUserDTO>(secLoginUser);
+                secLoginUserDTO.RoleValue = ((MyEnum.Role)secLoginUser.Role).ToString();
+                secLoginUserDTO.GenderValue = ((MyEnum.Gender)secLoginUser.Gender).ToString();
+                apiResponse.Data = secLoginUserDTO;
+                apiResponse.Success = true;
+                apiResponse.Message = "User fetched successfully.";
             }
-
-            //SecLoginUserDTO? secLoginUserDTO=new SecLoginUserDTO();
-            //secLoginUserDTO= _myMapper.MapEntityToDto<SecLoginUser, SecLoginUserDTO>(secLoginUser, secLoginUserDTO);
-
-            SecLoginUserDTO secLoginUserDTO= _mapper.Map<SecLoginUserDTO>(secLoginUser);
-            secLoginUserDTO.RoleValue = ((MyEnum.Role)secLoginUser.Role).ToString();
-            secLoginUserDTO.GenderValue = ((MyEnum.Gender)secLoginUser.Gender).ToString();
-            apiResponse.Data = secLoginUserDTO;
-            apiResponse.Success = true;
-            apiResponse.Message = "User fetched successfully.";
+            catch(Exception ex)
+            {
+                _serviceCalls.Log(MyEnum.LoggerType.WriteAndSaveLog, ex.Message, "GetSecLoginUser", ex.StackTrace);
+                apiResponse.Success = false;
+                apiResponse.Message = "Error Ocurred";
+            }
 
             return apiResponse;
         }
@@ -165,11 +176,12 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
                     return apiResponse;
                 }                    
             }
-            secLoginUserDTO.Password = Common.HashPassword(secLoginUserDTO.Password);
+            secLoginUserDTO.PasswordValue = Common.HashPassword(secLoginUserDTO.PasswordValue);
             SecLoginUser secLoginUser = _mapper.Map<SecLoginUser>(secLoginUserDTO);
 
-            secLoginUser.Gender = (int)Enum.Parse(typeof(MyEnum.Gender) , secLoginUserDTO.GenderValue);
-            secLoginUser.Role = (int)Enum.Parse(typeof(MyEnum.Role) , secLoginUserDTO.RoleValue);
+            secLoginUser.Gender = (int)Enum.Parse(typeof(MyEnum.Gender) , secLoginUserDTO.GenderValue, true);
+            secLoginUser.Role = (int)Enum.Parse(typeof(MyEnum.Role) , secLoginUserDTO.RoleValue, true);
+            secLoginUser.Password = secLoginUserDTO.PasswordValue;
 
             try
             {
@@ -181,6 +193,7 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
             {
                 apiResponse.Success = false ;
                 apiResponse.Message = $"Error saving user: {ex.Message}";
+                _serviceCalls.Log(MyEnum.LoggerType.WriteAndSaveLog, ex.Message, "SaveSecLoginUser", ex.StackTrace);
             }
             return apiResponse;
         }
