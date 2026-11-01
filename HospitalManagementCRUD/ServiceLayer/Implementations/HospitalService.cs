@@ -94,7 +94,47 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
                 apiResponse.Message= ex.Message;
             }
 
-            return null;
+            return apiResponse;
+        }
+
+        public async Task<ApiResponse<List<DoctorDTO>>> GetAllDoctorsHospitalAppointments(CancellationToken cancellationToken, int hospitalId)
+        {
+            ApiResponse<List<DoctorDTO>> apiResponse = new ApiResponse<List<DoctorDTO>>();
+
+            try
+            {
+                List<Doctor> doctorList = await _doctorRepo.GetAllDoctorsHospitalAppointments(cancellationToken, hospitalId);
+
+                List<DoctorDTO> doctorDTOs = new List<DoctorDTO>();
+
+                foreach (var item in doctorList)
+                {
+                    DoctorDTO dto = _mapper.Map<DoctorDTO>(item);
+                    dto.SpecializationValue = ((MyEnum.Specialization)item.Specialization).ToString();
+
+                    if(item.Appointments != null && item.Appointments.Count > 0)
+                    {
+                        dto.AppointmentsDTO = _mapper.Map<List<AppointmentDetailsDTO>>(item.Appointments);
+                    }
+                    else
+                    {
+                        dto.AppointmentsDTO = new List<AppointmentDetailsDTO>();
+                    }
+
+                    doctorDTOs.Add(dto);
+                }
+                apiResponse.Success = true;
+                apiResponse.Data = doctorDTOs;
+                return apiResponse;
+            }
+            catch (Exception ex)
+            {
+                _serviceCalls.Log(MyEnum.LoggerType.WriteAndSaveLog, ex.Message, "GetAllDoctorsOfHospital", ex.StackTrace);
+                apiResponse.Success = false;
+                apiResponse.Message = ex.Message;
+            }
+
+            return apiResponse;
         }
     }
 }

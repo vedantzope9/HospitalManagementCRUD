@@ -19,7 +19,7 @@ namespace HospitalManagementCRUD.RepositoryLayer.Implementations
 
         public async Task<Doctor?> GetDoctorByUserIdAsync(int userId)
         {
-            return await _context.Doctors.FirstOrDefaultAsync(t => t.UserId == userId);
+            return await _context.Doctors.AsNoTracking().FirstOrDefaultAsync(t => t.UserId == userId);
         }
 
         public async Task SaveDoctorAsync(Doctor doctor)
@@ -30,12 +30,17 @@ namespace HospitalManagementCRUD.RepositoryLayer.Implementations
 
         public async Task<int> GetDoctorIdByUserIdAsync(int userId)
         {
-            return await _context.Doctors.Where(t=>t.UserId==userId).Select(t=>t.DoctorId).SingleOrDefaultAsync();
+            return await _context.Doctors.Where(t=>t.UserId==userId).AsNoTracking().Select(t=>t.DoctorId).SingleOrDefaultAsync();
         }
 
         public async Task<List<Doctor>> GetAllDoctorsOfHospital(int hospitalId)
         {
-            return await _context.Doctors.Where(t=>t.HospitalId==hospitalId).ToListAsync();
+            return await _context.Doctors.Where(t=>t.HospitalId==hospitalId).AsNoTracking().ToListAsync();
+        }
+
+        public async Task<List<Doctor>> GetAllDoctorsHospitalAppointments(CancellationToken cancellationToken, int hospitalId)
+        {
+            return await _context.Doctors.Where(t=>t.HospitalId==hospitalId).Include(t => t.Appointments).AsNoTracking().ToListAsync(cancellationToken);
         }
     }
 }

@@ -40,9 +40,21 @@ namespace HospitalManagementCRUD.Controllers
 
         [Authorize(Roles = "Admin,Doctor")]
         [HttpGet]
-        public async Task<IActionResult> GetAllMyAppointmentAsDoctor()
+        public async Task<IActionResult> GetAllMyAppointmentAsDoctor(CancellationToken cancellationToken)
         {
-            var response = await _appointmentService.GetAllMyAppointmentAsDoctor();
+            var response = await _appointmentService.GetAllMyAppointmentAsDoctor(cancellationToken);
+            if (response.Success == false)
+            {
+                return NotFound(response.Message);
+            }
+            return Ok(response);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<IActionResult> GetAppointmentsByDoctorId(CancellationToken cancellationToken, int doctorId)
+        {
+            var response = await _appointmentService.GetAppointmentsByDoctorId(cancellationToken, doctorId);
             if (response.Success == false)
             {
                 return NotFound(response.Message);

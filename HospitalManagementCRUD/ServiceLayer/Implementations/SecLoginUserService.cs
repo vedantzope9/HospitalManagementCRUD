@@ -33,7 +33,7 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
         }
 
         public string CreateToken(SecLoginUser user)
-        {
+         {
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name , user.UserName),

@@ -9,5 +9,6 @@ namespace HospitalManagementCRUD.RepositoryLayer.Interfaces
         Task SaveDoctorAsync(Doctor doctor);
         Task<int> GetDoctorIdByUserIdAsync(int userId);
         Task<List<Doctor>> GetAllDoctorsOfHospital(int hospitalId);
+        Task<List<Doctor>> GetAllDoctorsHospitalAppointments(CancellationToken cancellationToken, int hospitalId);
     }
 }

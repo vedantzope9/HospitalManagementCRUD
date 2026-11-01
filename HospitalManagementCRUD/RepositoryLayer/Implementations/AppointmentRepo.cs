@@ -17,9 +17,9 @@ namespace HospitalManagementCRUD.RepositoryLayer.Implementations
             await _context.SaveChangesAsync();
         }
 
-        public async Task<List<Appointment>> GetAllAppointmentsByDoctorIdAsync(int doctorId)
+        public async Task<List<Appointment>> GetAllAppointmentsByDoctorIdAsync(CancellationToken cancellationToken, int doctorId)
         {
-            return await _context.Appointments.Where(t=>t.DoctorId==doctorId).ToListAsync();
+            return await _context.Appointments.Where(t=>t.DoctorId==doctorId).AsNoTracking().ToListAsync(cancellationToken);
         }
 
         public async Task<List<Appointment>> GetUpcomingAppointmentsByDoctorIdAsync(int doctorId)

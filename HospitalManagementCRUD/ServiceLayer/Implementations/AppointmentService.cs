@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HospitalManagementCRUD.ServiceLayer.Implementations
 {
-    public class AppointmentService:IAppointmentService
+    public class AppointmentService : IAppointmentService
     {
         private readonly IAppointmentRepo _appointmentRepo;
         private readonly IDoctorRepo _doctorRepo;
@@ -76,7 +76,7 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
             }
         }
 
-        public async Task<ApiResponse<List<AppointmentDetailsDTO>>> GetAllMyAppointmentAsDoctor()
+        public async Task<ApiResponse<List<AppointmentDetailsDTO>>> GetAllMyAppointmentAsDoctor(CancellationToken cancellationToken)
         {
             ApiResponse<List<AppointmentDetailsDTO>> apiResponse = new ApiResponse<List<AppointmentDetailsDTO>>();
             try
@@ -84,9 +84,44 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
                 int userId = _userService.UserId;
                 int doctorId = await _doctorRepo.GetDoctorIdByUserIdAsync(userId);
 
-                List<Appointment> appointments = await _appointmentRepo.GetAllAppointmentsByDoctorIdAsync(doctorId);
+                List<Appointment> appointments = await _appointmentRepo.GetAllAppointmentsByDoctorIdAsync(cancellationToken, doctorId);
 
 
+                List<AppointmentDetailsDTO> appointmentDetailsDTO = new List<AppointmentDetailsDTO>();
+
+                foreach (Appointment app in appointments)
+                {
+                    AppointmentDetailsDTO detailsDTO = _mapper.Map<AppointmentDetailsDTO>(app);
+                    detailsDTO.StatusValue = app.Status.ToString();
+
+                    SecLoginUser? secLoginUser = await _secLoginUserRepo.GetSecLoginUser(app.UserId);
+                    if (secLoginUser != null)
+                    {
+                        detailsDTO.UserName = secLoginUser.UserName;
+                        detailsDTO.PhoneNumber = secLoginUser.PhoneNumber;
+                        detailsDTO.Email = secLoginUser.Email;
+                        detailsDTO.GenderValue = secLoginUser.Gender.ToString();
+                    }
+                    appointmentDetailsDTO.Add(detailsDTO);
+                }
+                apiResponse.Success = true;
+                apiResponse.Data = appointmentDetailsDTO;
+            }
+            catch (Exception ex)
+            {
+                _serviceCalls.Log(MyEnum.LoggerType.WriteAndSaveLog, ex.Message, "GetAllMyAppointmentAsDoctor", ex.StackTrace);
+                apiResponse.Success = false;
+                apiResponse.Message = ex.Message;
+            }
+            return apiResponse;
+        }
+
+        public async Task<ApiResponse<List<AppointmentDetailsDTO>>> GetAppointmentsByDoctorId(CancellationToken cancellationToken, int doctorId)
+        {
+            ApiResponse<List<AppointmentDetailsDTO>> apiResponse = new ApiResponse<List<AppointmentDetailsDTO>>();
+            try
+            {
+                List<Appointment> appointments = await _appointmentRepo.GetAllAppointmentsByDoctorIdAsync(cancellationToken, doctorId);
                 List<AppointmentDetailsDTO> appointmentDetailsDTO = new List<AppointmentDetailsDTO>();
 
                 foreach (Appointment app in appointments)

@@ -8,5 +8,6 @@ namespace HospitalManagementCRUD.ServiceLayer.Interfaces
         Task<ApiResponse<HospitalDTO?>> GetHospitalById(int id);
         Task<ApiResponse<bool?>> SaveHospital(HospitalDTO hospitalDTO);
         Task<ApiResponse<List<DoctorDTO>>> GetAllDoctorsOfHospital(int hospitalId);
+        Task<ApiResponse<List<DoctorDTO>>> GetAllDoctorsHospitalAppointments(CancellationToken cancellationToken, int hospitalId);
     }
 }

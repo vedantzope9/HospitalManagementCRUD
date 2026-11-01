@@ -17,6 +17,7 @@
         public bool IsAvailable { get; set; }
 
         public bool IsActive { get; set; }
+        public List<AppointmentDetailsDTO> AppointmentsDTO{ get; set; }
 
     }
 }
