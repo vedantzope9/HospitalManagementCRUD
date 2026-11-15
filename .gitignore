@@ -61,9 +61,14 @@ nunit-*.xml
 HospitalManagementCRUD/appsettings.json
 LoggerService/appsettings.json
 HospitalManagementCRUD/HospitalManagementCRUD.csproj
+HospitalManagementCRUD/HospitalManagementCRUD.csproj.user
 LoggerService/LoggerService.csproj
 LoggerService/.config
 LoggerService/Properties/PublishProfiles/
 ErrorLogs/
 LoggerService/LoggerService.csproj.user
 LoggerService/LoggerService.csproj.user
+
+Client_HospitalManagmentCRUD/appsettings.json
+Client_HospitalManagmentCRUD/appsettings.Development.json
+Client_HospitalManagmentCRUD/Client_HospitalManagmentCRUD.csproj

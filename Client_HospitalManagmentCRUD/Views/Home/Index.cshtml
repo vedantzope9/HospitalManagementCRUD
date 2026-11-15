@@ -1,0 +1,21 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+
+
+<div>
+    <label class="col-md-1"> Username: </label> <input class="col-md-2" id="username" type="text" name="UserName" />
+    <br/>
+    <label class="col-md-1">Password:  </label> <input class=" col-md-2" id="password" type="password" name="Password" />
+    <br />   <br />
+    <input type="button" name="Login" value="Login" onclick="checkLogin()" />
+</div>
+
+@section Scripts {
+    <script src="~/js/home.js" asp-append-version="true"></script>
+}
