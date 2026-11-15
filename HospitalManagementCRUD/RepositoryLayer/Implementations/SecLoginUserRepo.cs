@@ -41,5 +41,17 @@ namespace HospitalManagementCRUD.RepositoryLayer.Implementations
         {
             return await _context.SecLoginUsers.Where(t=>t.UserId==userId).ExecuteUpdateAsync(setters => setters.SetProperty(t=>t.Role , (int)MyEnum.Role.Doctor));
         }
+
+        public async Task ClearRefreshTokenAndExpiryTime(int userId)
+        {
+            SecLoginUser? user = await _context.SecLoginUsers.FindAsync(userId);
+
+            if (user != null)
+            {
+                user.RefreshToken = null;
+                user.RefreshTokenExpiryTime = null;
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 }

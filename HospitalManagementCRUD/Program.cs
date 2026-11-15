@@ -59,7 +59,8 @@ namespace HospitalManagementCRUD
                             ValidAudience = builder.Configuration["AppSettings:Audience"],
                             ValidateLifetime = true,
                             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"]!)),
-                            ValidateIssuerSigningKey = true
+                            ValidateIssuerSigningKey = true,
+                            TokenDecryptionKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:EncryptionKey"]!))
                         };
                     });
 
@@ -103,11 +104,11 @@ namespace HospitalManagementCRUD
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
+            //if (app.Environment.IsDevelopment())
+            //{
                 app.UseSwagger();
                 app.UseSwaggerUI();
-            }
+            //}
 
             app.UseHttpsRedirection();
 

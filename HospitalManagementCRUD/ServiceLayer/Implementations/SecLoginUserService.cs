@@ -22,7 +22,8 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
         private readonly IConfiguration _config;
         private readonly ICommonRepo _commonRepo;
         private readonly ICommonServiceCalls _serviceCalls;
-        public SecLoginUserService(ISecLoginUserRepo secLoginUserRepo, MyMapper myMapper, IMapper mapper, IConfiguration configuration , ICommonRepo commonRepo, ICommonServiceCalls serviceCalls)
+        private readonly IUserService _userService;
+        public SecLoginUserService(ISecLoginUserRepo secLoginUserRepo, MyMapper myMapper, IMapper mapper, IConfiguration configuration , ICommonRepo commonRepo, ICommonServiceCalls serviceCalls , IUserService userService)
         {
             _secLoginUserRepo = secLoginUserRepo;
             _myMapper = myMapper;
@@ -30,6 +31,7 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
             _config = configuration;
             _commonRepo = commonRepo;
             _serviceCalls = serviceCalls;
+            _userService= userService;
         }
 
         public string CreateToken(SecLoginUser user)
@@ -41,21 +43,39 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
                 new Claim(ClaimTypes.Role , ((MyEnum.Role)user.Role).ToString())
             };
 
-            var key = new SymmetricSecurityKey(
-                    Encoding.UTF8.GetBytes(_config.GetValue<string>("AppSettings:Token")!)
-                );
-
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.GetValue<string>("AppSettings:Token")!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var tokenDescriptor = new JwtSecurityToken(
-                    issuer: _config.GetValue<string>("AppSettings:Issuer"),
-                    audience: _config.GetValue<string>("AppSettings:Audience"),
-                    claims: claims,
-                    expires: DateTime.UtcNow.AddMinutes(15),
-                    signingCredentials: creds
-                );
+            var encryptionKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.GetValue<string>("AppSettings:EncryptionKey")!));
 
-            return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
+            var encryptingCredentials = new EncryptingCredentials(encryptionKey,"dir",SecurityAlgorithms.Aes256CbcHmacSha512);
+
+            //var tokenDescriptor = new JwtSecurityToken(
+            //        issuer: _config.GetValue<string>("AppSettings:Issuer"),
+            //        audience: _config.GetValue<string>("AppSettings:Audience"),
+            //        claims: claims,
+            //        expires: DateTime.UtcNow.AddMinutes(15),
+            //        signingCredentials: creds
+            //    );
+            //return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Issuer = _config.GetValue<string>("AppSettings:Issuer"),
+                Audience = _config.GetValue<string>("AppSettings:Audience"),
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddMinutes(5),
+                SigningCredentials = creds,
+                EncryptingCredentials = encryptingCredentials
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+
+            var encryptedToken = tokenHandler.WriteToken(token);
+
+            return encryptedToken;
         }
 
         private string GenerateRefreshToken()
@@ -66,11 +86,14 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
             return Convert.ToBase64String(randomNumber);
         }
 
-        public async Task<string> GenerateAndSaveRefreshTokenAsync(SecLoginUser user)
+        public async Task<string> GenerateAndSaveRefreshTokenAsync(SecLoginUser user, string callfrom = "")
         {
             var refreshToken = GenerateRefreshToken();
             user.RefreshToken = refreshToken;
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddMinutes(15);
+
+            if(callfrom.ToUpper().Equals("REFRESHTOKEN")!=true)
+                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddMinutes(15);
+
             await _commonRepo.SaveChangesAsyncContext();
             return refreshToken;
         }
@@ -79,7 +102,7 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
         {
             SecLoginUser? user = await _secLoginUserRepo.GetSecLoginUser(dto.UserId);
 
-            if (user is null || user.RefreshToken != dto.AccessToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            if (user is null || user.RefreshToken != dto.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
             {
                 return null;
             }
@@ -95,12 +118,12 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
             {
                 apiResponse.Success = false;
                 apiResponse.Data = false;
-                apiResponse.Message = "Invalid refresh token";
+                apiResponse.Message = "Invalid/Expired refresh token";
                 return apiResponse;
             }
             apiResponse.Success = true;
             apiResponse.AccessToken = CreateToken(user);
-            apiResponse.RefreshToken = await GenerateAndSaveRefreshTokenAsync(user);
+            apiResponse.RefreshToken = await GenerateAndSaveRefreshTokenAsync(user , "RefreshToken");
             return apiResponse;   
         }
 
@@ -196,6 +219,19 @@ namespace HospitalManagementCRUD.ServiceLayer.Implementations
                 _serviceCalls.Log(MyEnum.LoggerType.WriteAndSaveLog, ex.Message, "SaveSecLoginUser", ex.StackTrace);
             }
             return apiResponse;
+        }
+
+        public async Task LogOutAsync()
+        {
+            try
+            {
+                int userId = _userService.UserId;
+                await _secLoginUserRepo.ClearRefreshTokenAndExpiryTime(userId);
+            }
+            catch (Exception ex)
+            {
+                _serviceCalls.Log(MyEnum.LoggerType.WriteAndSaveLog, ex.Message, "LogOutAsync", ex.StackTrace);
+            }
         }
     }
 }

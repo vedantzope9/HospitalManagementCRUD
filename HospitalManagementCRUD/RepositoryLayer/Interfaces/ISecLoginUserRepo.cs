@@ -9,5 +9,6 @@ namespace HospitalManagementCRUD.RepositoryLayer.Interfaces
         Task<bool> CheckUsernameExists(string username);
         Task<SecLoginUser?> CheckLogin(string username, string password);
         Task<int> ChangeRoleFromUserToDoctor(int userId);
+        Task ClearRefreshTokenAndExpiryTime(int userId);
     }
 }

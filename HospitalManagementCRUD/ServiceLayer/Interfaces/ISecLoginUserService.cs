@@ -10,6 +10,8 @@ namespace HospitalManagementCRUD.ServiceLayer.Interfaces
         Task<ApiResponse<bool>> CheckLogin(LoginDTO loginDTO);
         Task<ApiResponse<bool>> RefreshTokenAsync(RefreshTokenRequestDTO dto);
         string CreateToken(SecLoginUser user);
-        Task<string> GenerateAndSaveRefreshTokenAsync(SecLoginUser user);
+        Task<string> GenerateAndSaveRefreshTokenAsync(SecLoginUser user , string callfrom="");
+
+        Task LogOutAsync();
     }
 }

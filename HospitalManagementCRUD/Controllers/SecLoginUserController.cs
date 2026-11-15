@@ -62,7 +62,6 @@ namespace HospitalManagementCRUD.Controllers
             }
         }
 
-        [Authorize]
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken(RefreshTokenRequestDTO requestDTO)
         {
@@ -73,6 +72,14 @@ namespace HospitalManagementCRUD.Controllers
                 return StatusCode(StatusCodes.Status403Forbidden,response.Message);
             }
             return Ok(response);
+        }
+
+        [Authorize]
+        [HttpPost("logout")]
+        public async Task<IActionResult> LogOut()
+        {
+            await _secLoginUserService.LogOutAsync();
+            return Ok();
         }
     }
 }
